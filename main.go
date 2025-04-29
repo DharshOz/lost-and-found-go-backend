@@ -40,11 +40,13 @@ func main() {
 
 	// CORS configuration
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
+		AllowOriginFunc: func(origin string) bool {
+			return true // Allow all origins dynamically
+		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: false, // ← IMPORTANT
+		AllowCredentials: true, // Needed if you're using cookies or Authorization headers
 		MaxAge:           12 * time.Hour,
 	}))
 
