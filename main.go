@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"lostfound-backend/db"
 	"lostfound-backend/routes"
@@ -38,14 +37,12 @@ func main() {
 	// Create Gin router
 	router := gin.Default()
 
-	// CORS configuration
+	// Use CORS middleware
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:8000"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowOrigins:     []string{"*"}, // Allow all origins
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
 	}))
 
 	// API Routes
@@ -64,8 +61,8 @@ func main() {
 	protected.Use(routes.AuthMiddleware())
 	{
 		// User routes
-		protected.GET("/auth/user/:id", routes.GetUserProfile) // Add this
-		protected.PUT("/auth/user/:id", routes.UpdateUser)     // Add this
+		protected.GET("/auth/user/:id", routes.GetUserProfile)
+		protected.PUT("/auth/user/:id", routes.UpdateUser)
 
 		// Lost items routes
 		protected.POST("/lostitems", routes.AddLostItem)
@@ -88,8 +85,9 @@ func main() {
 		// Bookmark routes
 		protected.POST("/bookmarks", routes.AddBookmark)
 		protected.GET("/bookmarks", routes.GetBookmarks)
-		protected.DELETE("/bookmarks/:id", routes.DeleteBookmark) // Add this
+		protected.DELETE("/bookmarks/:id", routes.DeleteBookmark)
 	}
+
 	// Get port or fallback to 5000
 	port := os.Getenv("PORT")
 	if port == "" {
