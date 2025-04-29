@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"lostfound-backend/db"
 	"lostfound-backend/routes"
 	"lostfound-backend/utils"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -38,17 +36,19 @@ func main() {
 	// Create Gin router
 	router := gin.Default()
 
-	// CORS configuration
-	router.Use(cors.New(cors.Config{
-		AllowOriginFunc: func(origin string) bool {
-			return true // Allow all origins dynamically
-		},
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true, // Needed if you're using cookies or Authorization headers
-		MaxAge:           12 * time.Hour,
-	}))
+	// CORS middleware to allow all origins dynamically
+	router.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+		c.Next()
+	})
 
 	// API Routes
 	api := router.Group("/api")
