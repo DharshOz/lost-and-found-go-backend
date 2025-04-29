@@ -9,6 +9,7 @@ import (
 	"lostfound-backend/routes"
 	"lostfound-backend/utils"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -36,19 +37,13 @@ func main() {
 	// Create Gin router
 	router := gin.Default()
 
-	// CORS middleware to allow all origins dynamically
-	router.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-		c.Next()
-	})
+	// Use CORS middleware
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"}, // Allow all origins
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}))
 
 	// API Routes
 	api := router.Group("/api")
@@ -66,8 +61,8 @@ func main() {
 	protected.Use(routes.AuthMiddleware())
 	{
 		// User routes
-		protected.GET("/auth/user/:id", routes.GetUserProfile) // Add this
-		protected.PUT("/auth/user/:id", routes.UpdateUser)     // Add this
+		protected.GET("/auth/user/:id", routes.GetUserProfile)
+		protected.PUT("/auth/user/:id", routes.UpdateUser)
 
 		// Lost items routes
 		protected.POST("/lostitems", routes.AddLostItem)
@@ -90,8 +85,9 @@ func main() {
 		// Bookmark routes
 		protected.POST("/bookmarks", routes.AddBookmark)
 		protected.GET("/bookmarks", routes.GetBookmarks)
-		protected.DELETE("/bookmarks/:id", routes.DeleteBookmark) // Add this
+		protected.DELETE("/bookmarks/:id", routes.DeleteBookmark)
 	}
+
 	// Get port or fallback to 5000
 	port := os.Getenv("PORT")
 	if port == "" {
